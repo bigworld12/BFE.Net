@@ -281,7 +281,7 @@ namespace BriefFiniteElementNet
         {
             var k = GetLocalStiffnessMatrix();
 
-            
+
             var kArr = k.CoreArray;
 
             var r = GetTransformationParameters();
@@ -296,28 +296,7 @@ namespace BriefFiniteElementNet
 
             MathUtil.FillLowerTriangleFromUpperTriangle(k);
 
-            /** /
-            #region Tests
-            
-            var rMatrix = new Matrix(3, 3);
-            var tMatrix = new Matrix(12, 12);
 
-            Array.Copy(r, rMatrix.CoreArray, 9);
-
-            for (var ct = 0; ct < 4; ct++)
-                for (var i = 0; i < 3; i++)
-                    for (var j = 0; j < 3; j++)
-                        tMatrix[i + ct*3, j + ct*3] = rMatrix[i, j];
-
-           // var k2 = GetLocalStiffnessMatrix();
-
-            //var kg = tMatrix.Transpose() * k2 * tMatrix;
-
-            //var dif = kg - k;
-
-            //var max = dif.Select(i => Math.Abs(i)).Max();
-            #endregion
-            /**/
             return k;
         }
 
@@ -350,48 +329,47 @@ namespace BriefFiniteElementNet
                 az = props[5];
 
             var l = (this.EndNode.Location - this.StartNode.Location).Length;
-            var l2 = l*l;
+            var l2 = l * l;
 
 
-            var baseArr = new double[144];
-            var buf = Matrix.FromRowColCoreArray(12, 12, baseArr);
 
+            var buf = new Matrix(12, 12);
+            var baseArr = buf.CoreArray;
             if (!this._considerShearDeformation)
             {
                 #region With no shear
 
-                buf[0, 0] = a*l2;
-                buf[0, 6] = -a*l2;
-                buf[1, 1] = iz*12;
-                buf[1, 5] = iz*6*l;
-                buf[1, 7] = -iz*12;
-                buf[1, 11] = iz*6*l;
-                buf[2, 2] = iy*12;
-                buf[2, 4] = -iy*6*l;
-                buf[2, 8] = -iy*12;
-                buf[2, 10] = -iy*6*l;
-                buf[3, 3] = g*j*l2/e;
-                buf[3, 9] = -g*j*l2/e;
-                buf[4, 4] = iy*4*l2;
-                buf[4, 8] = iy*6*l;
-                buf[4, 10] = iy*2*l2;
-                buf[5, 5] = iz*4*l2;
-                buf[5, 7] = -iz*6*l;
-                buf[5, 11] = iz*2*l2;
-                buf[6, 6] = a*l2;
-                buf[7, 7] = iz*12;
-                buf[7, 11] = -iz*6*l;
-                buf[8, 8] = iy*12;
-                buf[8, 10] = iy*6*l;
-                buf[9, 9] = g*j*l2/e;
-                buf[10, 10] = iy*4*l2;
-                buf[11, 11] = iz*4*l2;
+                buf[0, 0] = a * l2;
+                buf[0, 6] = -a * l2;
+                buf[1, 1] = iz * 12;
+                buf[1, 5] = iz * 6 * l;
+                buf[1, 7] = -iz * 12;
+                buf[1, 11] = iz * 6 * l;
+                buf[2, 2] = iy * 12;
+                buf[2, 4] = -iy * 6 * l;
+                buf[2, 8] = -iy * 12;
+                buf[2, 10] = -iy * 6 * l;
+                buf[3, 3] = g * j * l2 / e;
+                buf[3, 9] = -g * j * l2 / e;
+                buf[4, 4] = iy * 4 * l2;
+                buf[4, 8] = iy * 6 * l;
+                buf[4, 10] = iy * 2 * l2;
+                buf[5, 5] = iz * 4 * l2;
+                buf[5, 7] = -iz * 6 * l;
+                buf[5, 11] = iz * 2 * l2;
+                buf[6, 6] = a * l2;
+                buf[7, 7] = iz * 12;
+                buf[7, 11] = -iz * 6 * l;
+                buf[8, 8] = iy * 12;
+                buf[8, 10] = iy * 6 * l;
+                buf[9, 9] = g * j * l2 / e;
+                buf[10, 10] = iy * 4 * l2;
+                buf[11, 11] = iz * 4 * l2;
 
                 #endregion
 
-                var alfa = E/(l*l*l);
-                for (var i = 0; i < 144; i++)
-                    baseArr[i] *= alfa;
+                var alfa = E / (l * l * l);
+                buf.MultiplyByConstant(alfa);
             }
             else
             {
@@ -401,47 +379,46 @@ namespace BriefFiniteElementNet
                     throw new InvalidOperationException(
                         "When considering shear defoemation none of the parameters Ay, Az and G should be zero");
 
-                var ez = e*iz/(ay*g);
-                var ey = e*iy/(az*g);
+                var ez = e * iz / (ay * g);
+                var ey = e * iy / (az * g);
 
-                buf[0, 0] = a/l;
-                buf[0, 6] = -(a/l);
-                buf[1, 1] = (iz/(l*(l2/12 + ez)))*(1);
-                buf[1, 5] = (iz/(l*(l2/12 + ez)))*(l/2);
-                buf[1, 7] = -((iz/(l*(l2/12 + ez)))*(1));
-                buf[1, 11] = (iz/(l*(l2/12 + ez)))*(l/2);
-                buf[2, 2] = (iy/(l*(l2/12 + ey)))*(1);
-                buf[2, 4] = -(iy/(l*(l2/12 + ey)))*(l/2);
-                buf[2, 8] = -((iy/(l*(l2/12 + ey)))*(1));
-                buf[2, 10] = -(iy/(l*(l2/12 + ey)))*(l/2);
-                buf[3, 3] = g*j/e*l;
-                buf[3, 9] = -g*j/e*l;
-                buf[4, 4] = (iy/(l*(l2/12 + ey)))*((l2/3 + ey));
-                buf[4, 8] = -(-(iy/(l*(l2/12 + ey)))*(l/2));
-                buf[4, 10] = (iy/(l*(l2/12 + ey)))*((l2/6 - ey));
-                buf[5, 5] = (iz/(l*(l2/12 + ez)))*((l2/3 + ez));
-                buf[5, 7] = -((iz/(l*(l2/12 + ez)))*(l/2));
-                buf[5, 11] = (iz/(l*(l2/12 + ez)))*((l2/6 - ez));
-                buf[6, 6] = a/l;
-                buf[7, 7] = (iz/(l*(l2/12 + ez)))*(1);
-                buf[7, 11] = -((iz/(l*(l2/12 + ez)))*(l/2));
-                buf[8, 8] = (iy/(l*(l2/12 + ey)))*(1);
-                buf[8, 10] = -(-(iy/(l*(l2/12 + ey)))*(l/2));
-                buf[9, 9] = g*j/e*l;
-                buf[10, 10] = (iy/(l*(l2/12 + ey)))*((l2/3 + ey));
-                buf[11, 11] = (iz/(l*(l2/12 + ez)))*((l2/3 + ez));
+                buf[0, 0] = a / l;
+                buf[0, 6] = -(a / l);
+                buf[1, 1] = (iz / (l * (l2 / 12 + ez))) * (1);
+                buf[1, 5] = (iz / (l * (l2 / 12 + ez))) * (l / 2);
+                buf[1, 7] = -((iz / (l * (l2 / 12 + ez))) * (1));
+                buf[1, 11] = (iz / (l * (l2 / 12 + ez))) * (l / 2);
+                buf[2, 2] = (iy / (l * (l2 / 12 + ey))) * (1);
+                buf[2, 4] = -(iy / (l * (l2 / 12 + ey))) * (l / 2);
+                buf[2, 8] = -((iy / (l * (l2 / 12 + ey))) * (1));
+                buf[2, 10] = -(iy / (l * (l2 / 12 + ey))) * (l / 2);
+                buf[3, 3] = g * j / e * l;
+                buf[3, 9] = -g * j / e * l;
+                buf[4, 4] = (iy / (l * (l2 / 12 + ey))) * ((l2 / 3 + ey));
+                buf[4, 8] = -(-(iy / (l * (l2 / 12 + ey))) * (l / 2));
+                buf[4, 10] = (iy / (l * (l2 / 12 + ey))) * ((l2 / 6 - ey));
+                buf[5, 5] = (iz / (l * (l2 / 12 + ez))) * ((l2 / 3 + ez));
+                buf[5, 7] = -((iz / (l * (l2 / 12 + ez))) * (l / 2));
+                buf[5, 11] = (iz / (l * (l2 / 12 + ez))) * ((l2 / 6 - ez));
+                buf[6, 6] = a / l;
+                buf[7, 7] = (iz / (l * (l2 / 12 + ez))) * (1);
+                buf[7, 11] = -((iz / (l * (l2 / 12 + ez))) * (l / 2));
+                buf[8, 8] = (iy / (l * (l2 / 12 + ey))) * (1);
+                buf[8, 10] = -(-(iy / (l * (l2 / 12 + ey))) * (l / 2));
+                buf[9, 9] = g * j / e * l;
+                buf[10, 10] = (iy / (l * (l2 / 12 + ey))) * ((l2 / 3 + ey));
+                buf[11, 11] = (iz / (l * (l2 / 12 + ez))) * ((l2 / 3 + ez));
 
                 #endregion
 
                 var alfa = E;
-                for (var i = 0; i < 144; i++)
-                    baseArr[i] *= alfa;
+                buf.MultiplyByConstant(alfa);
             }
 
             MathUtil.FillLowerTriangleFromUpperTriangle(buf);
 
             if (_hingedAtStart || _hingedAtEnd)
-                buf = GetReleaseMatrix() * buf; 
+                buf = GetReleaseMatrix() * buf;
 
             return buf;
         }
@@ -488,9 +465,9 @@ namespace BriefFiniteElementNet
                 if (!cmb.ContainsKey(ld.Case))
                     continue;
 
-                var frc = ((Load1D) ld).GetInternalForceAt(this, x);
+                var frc = ((Load1D)ld).GetInternalForceAt(this, x);
 
-                forceAtX += cmb[ld.Case]*frc;
+                forceAtX += cmb[ld.Case] * frc;
             }
 
             return forceAtX;
@@ -633,7 +610,7 @@ namespace BriefFiniteElementNet
         {
             var recalc = true;
 
-            if(LastStartPoint.HasValue && LastEndPoint.HasValue)
+            if (LastStartPoint.HasValue && LastEndPoint.HasValue)
                 if (LastStartPoint.Value.Equals(StartNode.Location) && LastEndPoint.Value.Equals(EndNode.Location))
                     recalc = false;
 
@@ -714,7 +691,7 @@ namespace BriefFiniteElementNet
             pars[6] = czx;
             pars[7] = czy * c + czz * s;
             pars[8] = -czy * s + czz * c;
-            
+
         }
 
         /// <summary>
@@ -786,7 +763,7 @@ namespace BriefFiniteElementNet
             _iy = info.GetDouble("_iy");
             _iz = info.GetDouble("_iz");
             _j = info.GetDouble("_j");
-            _geometry = (PolygonYz)info.GetValue("_geometry",typeof(PolygonYz));
+            _geometry = (PolygonYz)info.GetValue("_geometry", typeof(PolygonYz));
             _useOverridedProperties = info.GetBoolean("_useOverridedProperties");
             _considerShearDeformation = info.GetBoolean("_considerShearDeformation");
             _hingedAtStart = info.GetBoolean("_hingedAtStart");
@@ -810,7 +787,7 @@ namespace BriefFiniteElementNet
 
 
             var y = new Matrix(3, 3);
-            y[1, 2] = -(y[2, 1] = -1.5/l);
+            y[1, 2] = -(y[2, 1] = -1.5 / l);
             var z = new Matrix(3, 3);
             var x = new Matrix(3, 3);
             x[1, 1] = x[2, 2] = -0.5;
@@ -818,7 +795,7 @@ namespace BriefFiniteElementNet
             w[0, 0] = 1;
 
 
-            var c = 2*(_hingedAtStart ? 0 : 1) + (_hingedAtEnd ? 0 : 1); //2*H(3)+H(4)=1
+            var c = 2 * (_hingedAtStart ? 0 : 1) + (_hingedAtEnd ? 0 : 1); //2*H(3)+H(4)=1
 
             switch (c)
             {
@@ -830,7 +807,7 @@ namespace BriefFiniteElementNet
                     //  z  w  z  z
                     //  z  y  I  y
                     //  z  z  z  w
-                    y.MultiplyByConstant(2.0/3.0);
+                    y.MultiplyByConstant(2.0 / 3.0);
                     buf.AssembleInside(-y, 0, 3);
                     buf.AssembleInside(w, 3, 3);
                     buf.AssembleInside(y, 6, 3);
@@ -925,7 +902,7 @@ namespace BriefFiniteElementNet
             var ro = this.MassDensity;
             var i0 = iy + iz;
 
-
+            double c;
             if (MassFormulationType == MassFormulation.Consistent)
             {
                 #region filling m
@@ -933,46 +910,43 @@ namespace BriefFiniteElementNet
                 m[0, 0] = 140;
                 m[1, 1] = 156;
                 m[2, 2] = 156;
-                m[3, 3] = 140*i0/a;
-                m[4, 4] = 4*l*l;
-                m[5, 5] = 4*l*l;
+                m[3, 3] = 140 * i0 / a;
+                m[4, 4] = 4 * l * l;
+                m[5, 5] = 4 * l * l;
 
                 m[6, 6] = 140;
                 m[7, 7] = 156;
                 m[8, 8] = 156;
-                m[9, 9] = 140*i0/a;
-                m[10, 10] = 4*l*l;
-                m[11, 11] = 4*l*l;
+                m[9, 9] = 140 * i0 / a;
+                m[10, 10] = 4 * l * l;
+                m[11, 11] = 4 * l * l;
 
 
                 m[0, 6] = 70;
 
-                m[1, 5] = 22*l;
+                m[1, 5] = 22 * l;
                 m[1, 7] = 54;
-                m[1, 11] = -13*l;
+                m[1, 11] = -13 * l;
 
-                m[2, 4] = -22*l;
+                m[2, 4] = -22 * l;
                 m[2, 8] = 54;
-                m[2, 10] = 13*l;
+                m[2, 10] = 13 * l;
 
-                m[3, 9] = 70*i0/a;
+                m[3, 9] = 70 * i0 / a;
 
-                m[4, 8] = -13*l;
-                m[4, 10] = -3*l*l;
+                m[4, 8] = -13 * l;
+                m[4, 10] = -3 * l * l;
 
-                m[5, 7] = 13*l;
-                m[5, 11] = -3*l*l;
+                m[5, 7] = 13 * l;
+                m[5, 11] = -3 * l * l;
 
-                m[7, 11] = -22*l;
+                m[7, 11] = -22 * l;
 
-                m[8, 10] = 22*l;
+                m[8, 10] = 22 * l;
 
                 #endregion
 
-                var c = ro * a * l / 420.0;
-
-                for (var i = 0; i < m.CoreArray.Length; i++) //m=c*m
-                    m.CoreArray[i] *= c;
+                c = ro * a * l / 420.0;
             }
             else
             {
@@ -983,23 +957,20 @@ namespace BriefFiniteElementNet
                     m[i, i] = 1;
                 }
 
-                m[3, 3] = m[9, 9] = 0*i0/a;
+                m[3, 3] = m[9, 9] = 0 * i0 / a;
                 m[4, 4] = m[5, 5] = m[10, 10] = m[11, 11] = 0;
 
                 #endregion
 
-                var c = ro * a * l / 2.0;
-
-                for (var i = 0; i < m.CoreArray.Length; i++) //m=c*m
-                    m.CoreArray[i] *= c;
+                c = ro * a * l / 2.0;
             }
+            m.MultiplyByConstant(c);
 
 
-           
 
             if (_hingedAtStart || _hingedAtEnd)
                 if (MassFormulationType != MassFormulation.Lumped)
-                m = GetReleaseMatrix()*m;
+                    m = GetReleaseMatrix() * m;
 
             return m;
         }
@@ -1012,22 +983,25 @@ namespace BriefFiniteElementNet
 
 
 
-        private static void MultSubMatrix(double[] k, double[] r, int i, int j)
+        private static void MultSubMatrix(double[,] k, double[] r, int i, int j)
         {
             var st = j * 36 + 3 * i;
 
             var tmp = new double[9];
             var tmp2 = new double[9];
+            var cc = k.GetLength(1);
+            int getRowIndex(int ind) => ind / cc;
+            int getColumnIndex(int ind) => ind % cc;
 
-            tmp[0] = r[00] * k[st + 00] + r[01] * k[st + 01] + r[02] * k[st + 02];
-            tmp[3] = r[00] * k[st + 12] + r[01] * k[st + 13] + r[02] * k[st + 14];
-            tmp[6] = r[00] * k[st + 24] + r[01] * k[st + 25] + r[02] * k[st + 26];
-            tmp[1] = r[03] * k[st + 00] + r[04] * k[st + 01] + r[05] * k[st + 02];
-            tmp[4] = r[03] * k[st + 12] + r[04] * k[st + 13] + r[05] * k[st + 14];
-            tmp[7] = r[03] * k[st + 24] + r[04] * k[st + 25] + r[05] * k[st + 26];
-            tmp[2] = r[06] * k[st + 00] + r[07] * k[st + 01] + r[08] * k[st + 02];
-            tmp[5] = r[06] * k[st + 12] + r[07] * k[st + 13] + r[08] * k[st + 14];
-            tmp[8] = r[06] * k[st + 24] + r[07] * k[st + 25] + r[08] * k[st + 26];
+            tmp[0] = r[00] * k[getRowIndex(st + 00), getColumnIndex(st + 00)] + r[01] * k[getRowIndex(st + 01), getColumnIndex(st + 01)] + r[02] * k[getRowIndex(st + 02), getColumnIndex(st + 02)];
+            tmp[3] = r[00] * k[getRowIndex(st + 12), getColumnIndex(st + 12)] + r[01] * k[getRowIndex(st + 13), getColumnIndex(st + 13)] + r[02] * k[getRowIndex(st + 14), getColumnIndex(st + 14)];
+            tmp[6] = r[00] * k[getRowIndex(st + 24), getColumnIndex(st + 24)] + r[01] * k[getRowIndex(st + 25), getColumnIndex(st + 25)] + r[02] * k[getRowIndex(st + 26), getColumnIndex(st + 26)];
+            tmp[1] = r[03] * k[getRowIndex(st + 00), getColumnIndex(st + 00)] + r[04] * k[getRowIndex(st + 01), getColumnIndex(st + 01)] + r[05] * k[getRowIndex(st + 02), getColumnIndex(st + 02)];
+            tmp[4] = r[03] * k[getRowIndex(st + 12), getColumnIndex(st + 12)] + r[04] * k[getRowIndex(st + 13), getColumnIndex(st + 13)] + r[05] * k[getRowIndex(st + 14), getColumnIndex(st + 14)];
+            tmp[7] = r[03] * k[getRowIndex(st + 24), getColumnIndex(st + 24)] + r[04] * k[getRowIndex(st + 25), getColumnIndex(st + 25)] + r[05] * k[getRowIndex(st + 26), getColumnIndex(st + 26)];
+            tmp[2] = r[06] * k[getRowIndex(st + 00), getColumnIndex(st + 00)] + r[07] * k[getRowIndex(st + 01), getColumnIndex(st + 01)] + r[08] * k[getRowIndex(st + 02), getColumnIndex(st + 02)];
+            tmp[5] = r[06] * k[getRowIndex(st + 12), getColumnIndex(st + 12)] + r[07] * k[getRowIndex(st + 13), getColumnIndex(st + 13)] + r[08] * k[getRowIndex(st + 14), getColumnIndex(st + 14)];
+            tmp[8] = r[06] * k[getRowIndex(st + 24), getColumnIndex(st + 24)] + r[07] * k[getRowIndex(st + 25), getColumnIndex(st + 25)] + r[08] * k[getRowIndex(st + 26), getColumnIndex(st + 26)];
 
             tmp2[0] = tmp[00] * r[00] + tmp[03] * r[01] + tmp[06] * r[02];
             tmp2[3] = tmp[00] * r[03] + tmp[03] * r[04] + tmp[06] * r[05];
@@ -1039,19 +1013,15 @@ namespace BriefFiniteElementNet
             tmp2[5] = tmp[02] * r[03] + tmp[05] * r[04] + tmp[08] * r[05];
             tmp2[8] = tmp[02] * r[06] + tmp[05] * r[07] + tmp[08] * r[08];
 
-
-            //var tmp3 = Matrix.FromRowColCoreArray(3, 3, tmp2);
-            //var dif = (buf - tmp3).Select(l=>Math.Abs(l)).Max();
-
-            k[st + 00] = tmp2[0];
-            k[st + 12] = tmp2[3];
-            k[st + 24] = tmp2[6];
-            k[st + 01] = tmp2[1];
-            k[st + 13] = tmp2[4];
-            k[st + 25] = tmp2[7];
-            k[st + 02] = tmp2[2];
-            k[st + 14] = tmp2[5];
-            k[st + 26] = tmp2[8];
+            k[getRowIndex(st + 00), getColumnIndex(st + 00)] = tmp2[0];
+            k[getRowIndex(st + 12), getColumnIndex(st + 12)] = tmp2[3];
+            k[getRowIndex(st + 24), getColumnIndex(st + 24)] = tmp2[6];
+            k[getRowIndex(st + 01), getColumnIndex(st + 01)] = tmp2[1];
+            k[getRowIndex(st + 13), getColumnIndex(st + 13)] = tmp2[4];
+            k[getRowIndex(st + 25), getColumnIndex(st + 25)] = tmp2[7];
+            k[getRowIndex(st + 02), getColumnIndex(st + 02)] = tmp2[2];
+            k[getRowIndex(st + 14), getColumnIndex(st + 14)] = tmp2[5];
+            k[getRowIndex(st + 26), getColumnIndex(st + 26)] = tmp2[8];
         }
 
 
@@ -1069,7 +1039,7 @@ namespace BriefFiniteElementNet
         {
             var L = (EndNode.Location - StartNode.Location).Length;
 
-            var L2 = L*L;
+            var L2 = L * L;
 
             //location is xi varies from -1 to 1
             var xi = location[0];
@@ -1122,18 +1092,18 @@ namespace BriefFiniteElementNet
             var buf = new Matrix(1, 12);
 
             buf.FillMatrixRowise(
-                xi/2 + 1.0/2,
-                ((xi - 1)*(xi - 1)*(xi + 2))/4,
-                ((xi - 1)*(xi - 1)*(xi + 2))/4,
-                xi/2 + 1.0/2,
-                (L*(xi - 1)*(xi - 1)*(xi + 1))/8,
-                (L*(xi - 1)*(xi - 1)*(xi + 1))/8,
-                1.0/2 - xi/2,
-                -((xi + 1)*(xi + 1)*(xi - 2))/4,
-                -((xi + 1)*(xi + 1)*(xi - 2))/4,
-                1.0/2 - xi/2,
-                (L*(xi - 1)*(xi + 1)*(xi + 1))/8,
-                (L*(xi - 1)*(xi + 1)*(xi + 1))/8);
+                xi / 2 + 1.0 / 2,
+                ((xi - 1) * (xi - 1) * (xi + 2)) / 4,
+                ((xi - 1) * (xi - 1) * (xi + 2)) / 4,
+                xi / 2 + 1.0 / 2,
+                (L * (xi - 1) * (xi - 1) * (xi + 1)) / 8,
+                (L * (xi - 1) * (xi - 1) * (xi + 1)) / 8,
+                1.0 / 2 - xi / 2,
+                -((xi + 1) * (xi + 1) * (xi - 2)) / 4,
+                -((xi + 1) * (xi + 1) * (xi - 2)) / 4,
+                1.0 / 2 - xi / 2,
+                (L * (xi - 1) * (xi + 1) * (xi + 1)) / 8,
+                (L * (xi - 1) * (xi + 1) * (xi + 1)) / 8);
 
             return buf;
         }
@@ -1143,7 +1113,7 @@ namespace BriefFiniteElementNet
         {
             var v = (EndNode.Location - StartNode.Location).Length;
 
-            return new Matrix(new double[] {v/2});
+            return new Matrix(new double[] { v / 2 });
         }
     }
 }

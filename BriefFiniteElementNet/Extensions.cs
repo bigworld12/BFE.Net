@@ -175,7 +175,7 @@ namespace BriefFiniteElementNet
                     break;
                 #endregion 64
 
-                    break;
+                   
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -435,10 +435,13 @@ namespace BriefFiniteElementNet
         /// <param name="constant">The constant value</param>
         public static void MultiplyByConstant(this Matrix matrix, double constant)
         {
-            for (var i = 0; i < matrix.CoreArray.Length; i++)
+            for (int i = 0; i < matrix.RowCount; i++)
             {
-                matrix.CoreArray[i] *= constant;
-            }
+                for (int j = 0; j < matrix.ColumnCount; j++)
+                {
+                    matrix.CoreArray[i,j] *= constant;
+                }
+            }            
         }
 
         /// <summary>

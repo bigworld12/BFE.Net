@@ -11,7 +11,7 @@ namespace BriefFiniteElementNet
     /// Represents a general concentrated force in 3D (can also includ moments in addition to forces)
     /// </summary>
     [Serializable]
-    public struct Force:ISerializable
+    public struct Force : ISerializable
     {
         #region Members
 
@@ -116,7 +116,7 @@ namespace BriefFiniteElementNet
         {
             get
             {
-                return new Vector(fx,fy,fz);
+                return new Vector(fx, fy, fz);
             }
 
             set
@@ -199,7 +199,7 @@ namespace BriefFiniteElementNet
             this.mz = mz;
         }
 
-        public Force(Vector forces,Vector moments) : this()
+        public Force(Vector forces, Vector moments) : this()
         {
             this.Forces = forces;
             this.Moments = moments;
@@ -221,7 +221,26 @@ namespace BriefFiniteElementNet
                 vec[startIndex + 4],
                 vec[startIndex + 5]);
         }
-
+        /// <summary>
+        /// Created the <see cref="Force"/> from a <see cref="Double"/> array.
+        /// </summary>
+        /// <param name="vec">The vec.</param>
+        /// <param name="startIndex">The start index of forces vector.</param>
+        /// <returns></returns>
+        public static Force FromVector2D(double[,] vec, int startIndex)
+        {
+            var cc = vec.GetLength(1);
+            //reverses a row-wise flattening
+            int getRowIndex(int i) => i / cc;
+            int getColumnIndex(int i) => i % cc;
+            return new Force(
+                vec[getRowIndex(startIndex + 0), getColumnIndex(startIndex + 0)],
+                vec[getRowIndex(startIndex + 1), getColumnIndex(startIndex + 1)],
+                vec[getRowIndex(startIndex + 2), getColumnIndex(startIndex + 2)],
+                vec[getRowIndex(startIndex + 3), getColumnIndex(startIndex + 3)],
+                vec[getRowIndex(startIndex + 4), getColumnIndex(startIndex + 4)],
+                vec[getRowIndex(startIndex + 5), getColumnIndex(startIndex + 5)]);
+        }
         #region Operators
 
         /// <summary>
@@ -261,7 +280,7 @@ namespace BriefFiniteElementNet
         /// </returns>
         public static Force operator *(double c, Force f)
         {
-            return new Force(c*f.fx, c*f.fy, c*f.fz, c*f.mx, c*f.my, c*f.mz);
+            return new Force(c * f.fx, c * f.fy, c * f.fz, c * f.mx, c * f.my, c * f.mz);
         }
 
         /// <summary>
@@ -274,7 +293,7 @@ namespace BriefFiniteElementNet
         /// </returns>
         public static Force operator *(Force f, double c)
         {
-            return new Force(c*f.fx, c*f.fy, c*f.fz, c*f.mx, c*f.my, c*f.mz);
+            return new Force(c * f.fx, c * f.fy, c * f.fz, c * f.mx, c * f.my, c * f.mz);
         }
 
         /// <summary>
@@ -286,7 +305,7 @@ namespace BriefFiniteElementNet
         /// </returns>
         public static Force operator -(Force f)
         {
-            return new Force(- f.fx, - f.fy, - f.fz, - f.mx, - f.my, - f.mz);
+            return new Force(-f.fx, -f.fy, -f.fz, -f.mx, -f.my, -f.mz);
         }
 
         public static bool operator ==(Force f1, Force f2)
@@ -309,7 +328,7 @@ namespace BriefFiniteElementNet
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            return obj is Force && Equals((Force) obj);
+            return obj is Force && Equals((Force)obj);
         }
 
         public override int GetHashCode()
@@ -317,11 +336,11 @@ namespace BriefFiniteElementNet
             unchecked
             {
                 var hashCode = fx.GetHashCode();
-                hashCode = (hashCode*397) ^ fy.GetHashCode();
-                hashCode = (hashCode*397) ^ fz.GetHashCode();
-                hashCode = (hashCode*397) ^ mx.GetHashCode();
-                hashCode = (hashCode*397) ^ my.GetHashCode();
-                hashCode = (hashCode*397) ^ mz.GetHashCode();
+                hashCode = (hashCode * 397) ^ fy.GetHashCode();
+                hashCode = (hashCode * 397) ^ fz.GetHashCode();
+                hashCode = (hashCode * 397) ^ mx.GetHashCode();
+                hashCode = (hashCode * 397) ^ my.GetHashCode();
+                hashCode = (hashCode * 397) ^ mz.GetHashCode();
                 return hashCode;
             }
         }

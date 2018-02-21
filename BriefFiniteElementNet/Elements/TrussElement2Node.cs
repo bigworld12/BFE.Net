@@ -181,22 +181,25 @@ namespace BriefFiniteElementNet.Elements
         }
 
 
-        private static void MultSubMatrix(double[] k, double[] r, int i, int j)
+        private static void MultSubMatrix(double[,] k, double[] r, int i, int j)
         {
             var st = j * 36 + 3 * i;
 
             var tmp = new double[9];
             var tmp2 = new double[9];
+            var cc = k.GetLength(1);
+            int getRowIndex(int ind) => ind / cc;
+            int getColumnIndex(int ind) => ind % cc;
 
-            tmp[0] = r[00] * k[st + 00] + r[01] * k[st + 01] + r[02] * k[st + 02];
-            tmp[3] = r[00] * k[st + 12] + r[01] * k[st + 13] + r[02] * k[st + 14];
-            tmp[6] = r[00] * k[st + 24] + r[01] * k[st + 25] + r[02] * k[st + 26];
-            tmp[1] = r[03] * k[st + 00] + r[04] * k[st + 01] + r[05] * k[st + 02];
-            tmp[4] = r[03] * k[st + 12] + r[04] * k[st + 13] + r[05] * k[st + 14];
-            tmp[7] = r[03] * k[st + 24] + r[04] * k[st + 25] + r[05] * k[st + 26];
-            tmp[2] = r[06] * k[st + 00] + r[07] * k[st + 01] + r[08] * k[st + 02];
-            tmp[5] = r[06] * k[st + 12] + r[07] * k[st + 13] + r[08] * k[st + 14];
-            tmp[8] = r[06] * k[st + 24] + r[07] * k[st + 25] + r[08] * k[st + 26];
+            tmp[0] = r[00] * k[getRowIndex(st + 00), getColumnIndex(st + 00)] + r[01] * k[getRowIndex(st + 01), getColumnIndex(st + 01)] + r[02] * k[getRowIndex(st + 02), getColumnIndex(st + 02)];
+            tmp[3] = r[00] * k[getRowIndex(st + 12), getColumnIndex(st + 12)] + r[01] * k[getRowIndex(st + 13), getColumnIndex(st + 13)] + r[02] * k[getRowIndex(st + 14), getColumnIndex(st + 14)];
+            tmp[6] = r[00] * k[getRowIndex(st + 24), getColumnIndex(st + 24)] + r[01] * k[getRowIndex(st + 25), getColumnIndex(st + 25)] + r[02] * k[getRowIndex(st + 26), getColumnIndex(st + 26)];
+            tmp[1] = r[03] * k[getRowIndex(st + 00), getColumnIndex(st + 00)] + r[04] * k[getRowIndex(st + 01), getColumnIndex(st + 01)] + r[05] * k[getRowIndex(st + 02), getColumnIndex(st + 02)];
+            tmp[4] = r[03] * k[getRowIndex(st + 12), getColumnIndex(st + 12)] + r[04] * k[getRowIndex(st + 13), getColumnIndex(st + 13)] + r[05] * k[getRowIndex(st + 14), getColumnIndex(st + 14)];
+            tmp[7] = r[03] * k[getRowIndex(st + 24), getColumnIndex(st + 24)] + r[04] * k[getRowIndex(st + 25), getColumnIndex(st + 25)] + r[05] * k[getRowIndex(st + 26), getColumnIndex(st + 26)];
+            tmp[2] = r[06] * k[getRowIndex(st + 00), getColumnIndex(st + 00)] + r[07] * k[getRowIndex(st + 01), getColumnIndex(st + 01)] + r[08] * k[getRowIndex(st + 02), getColumnIndex(st + 02)];
+            tmp[5] = r[06] * k[getRowIndex(st + 12), getColumnIndex(st + 12)] + r[07] * k[getRowIndex(st + 13), getColumnIndex(st + 13)] + r[08] * k[getRowIndex(st + 14), getColumnIndex(st + 14)];
+            tmp[8] = r[06] * k[getRowIndex(st + 24), getColumnIndex(st + 24)] + r[07] * k[getRowIndex(st + 25), getColumnIndex(st + 25)] + r[08] * k[getRowIndex(st + 26), getColumnIndex(st + 26)];
 
             tmp2[0] = tmp[00] * r[00] + tmp[03] * r[01] + tmp[06] * r[02];
             tmp2[3] = tmp[00] * r[03] + tmp[03] * r[04] + tmp[06] * r[05];
@@ -208,19 +211,53 @@ namespace BriefFiniteElementNet.Elements
             tmp2[5] = tmp[02] * r[03] + tmp[05] * r[04] + tmp[08] * r[05];
             tmp2[8] = tmp[02] * r[06] + tmp[05] * r[07] + tmp[08] * r[08];
 
+            k[getRowIndex(st + 00), getColumnIndex(st + 00)] = tmp2[0];
+            k[getRowIndex(st + 12), getColumnIndex(st + 12)] = tmp2[3];
+            k[getRowIndex(st + 24), getColumnIndex(st + 24)] = tmp2[6];
+            k[getRowIndex(st + 01), getColumnIndex(st + 01)] = tmp2[1];
+            k[getRowIndex(st + 13), getColumnIndex(st + 13)] = tmp2[4];
+            k[getRowIndex(st + 25), getColumnIndex(st + 25)] = tmp2[7];
+            k[getRowIndex(st + 02), getColumnIndex(st + 02)] = tmp2[2];
+            k[getRowIndex(st + 14), getColumnIndex(st + 14)] = tmp2[5];
+            k[getRowIndex(st + 26), getColumnIndex(st + 26)] = tmp2[8];
+            //var st = j * 36 + 3 * i;
 
-            //var tmp3 = Matrix.FromRowColCoreArray(3, 3, tmp2);
-            //var dif = (buf - tmp3).Select(l=>Math.Abs(l)).Max();
+            //var tmp = new double[9];
+            //var tmp2 = new double[9];
 
-            k[st + 00] = tmp2[0];
-            k[st + 12] = tmp2[3];
-            k[st + 24] = tmp2[6];
-            k[st + 01] = tmp2[1];
-            k[st + 13] = tmp2[4];
-            k[st + 25] = tmp2[7];
-            k[st + 02] = tmp2[2];
-            k[st + 14] = tmp2[5];
-            k[st + 26] = tmp2[8];
+            //tmp[0] = r[00] * k[st + 00] + r[01] * k[st + 01] + r[02] * k[st + 02];
+            //tmp[3] = r[00] * k[st + 12] + r[01] * k[st + 13] + r[02] * k[st + 14];
+            //tmp[6] = r[00] * k[st + 24] + r[01] * k[st + 25] + r[02] * k[st + 26];
+            //tmp[1] = r[03] * k[st + 00] + r[04] * k[st + 01] + r[05] * k[st + 02];
+            //tmp[4] = r[03] * k[st + 12] + r[04] * k[st + 13] + r[05] * k[st + 14];
+            //tmp[7] = r[03] * k[st + 24] + r[04] * k[st + 25] + r[05] * k[st + 26];
+            //tmp[2] = r[06] * k[st + 00] + r[07] * k[st + 01] + r[08] * k[st + 02];
+            //tmp[5] = r[06] * k[st + 12] + r[07] * k[st + 13] + r[08] * k[st + 14];
+            //tmp[8] = r[06] * k[st + 24] + r[07] * k[st + 25] + r[08] * k[st + 26];
+
+            //tmp2[0] = tmp[00] * r[00] + tmp[03] * r[01] + tmp[06] * r[02];
+            //tmp2[3] = tmp[00] * r[03] + tmp[03] * r[04] + tmp[06] * r[05];
+            //tmp2[6] = tmp[00] * r[06] + tmp[03] * r[07] + tmp[06] * r[08];
+            //tmp2[1] = tmp[01] * r[00] + tmp[04] * r[01] + tmp[07] * r[02];
+            //tmp2[4] = tmp[01] * r[03] + tmp[04] * r[04] + tmp[07] * r[05];
+            //tmp2[7] = tmp[01] * r[06] + tmp[04] * r[07] + tmp[07] * r[08];
+            //tmp2[2] = tmp[02] * r[00] + tmp[05] * r[01] + tmp[08] * r[02];
+            //tmp2[5] = tmp[02] * r[03] + tmp[05] * r[04] + tmp[08] * r[05];
+            //tmp2[8] = tmp[02] * r[06] + tmp[05] * r[07] + tmp[08] * r[08];
+
+
+            ////var tmp3 = Matrix.FromRowColCoreArray(3, 3, tmp2);
+            ////var dif = (buf - tmp3).Select(l=>Math.Abs(l)).Max();
+
+            //k[st + 00] = tmp2[0];
+            //k[st + 12] = tmp2[3];
+            //k[st + 24] = tmp2[6];
+            //k[st + 01] = tmp2[1];
+            //k[st + 13] = tmp2[4];
+            //k[st + 25] = tmp2[7];
+            //k[st + 02] = tmp2[2];
+            //k[st + 14] = tmp2[5];
+            //k[st + 26] = tmp2[8];
         }
 
         private double[] GetTransformationParameters()

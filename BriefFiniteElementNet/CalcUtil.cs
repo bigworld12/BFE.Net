@@ -887,8 +887,8 @@ namespace BriefFiniteElementNet
 
             var buf = new Force[2];
 
-            buf[0] = Force.FromVector(ld.CoreArray, 0);
-            buf[1] = Force.FromVector(ld.CoreArray, 6);
+            buf[0] = Force.FromVector2D(ld.CoreArray, 0);
+            buf[1] = Force.FromVector2D(ld.CoreArray, 6);
 
             return buf;
         }

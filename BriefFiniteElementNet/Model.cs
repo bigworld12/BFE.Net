@@ -334,11 +334,12 @@ namespace BriefFiniteElementNet
         /// <param name="factory">The factory.</param>
         public void Solve(ISolverFactory factory)
         {
-            var cfg = new SolverConfiguration();
+            var cfg = new SolverConfiguration
+            {
+                SolverFactory = factory,
 
-            cfg.SolverFactory = factory;
-
-            cfg.LoadCases = new List<LoadCase>() { LoadCase.DefaultLoadCase };
+                LoadCases = new List<LoadCase>() { LoadCase.DefaultLoadCase }
+            };
 
             Solve(cfg);
         }
@@ -349,11 +350,12 @@ namespace BriefFiniteElementNet
         /// <param name="cases">The cases.</param>
         public void Solve(params LoadCase[] cases)
         {
-            var cfg = new SolverConfiguration();
+            var cfg = new SolverConfiguration
+            {
+                SolverFactory = new CholeskySolverFactory(),//if not defined, Cholesky by default
 
-            cfg.SolverFactory = new CholeskySolverFactory();//if not defined, Cholesky by default
-
-            cfg.LoadCases = new List<LoadCase>(cases);
+                LoadCases = new List<LoadCase>(cases)
+            };
 
             Solve(cfg);
         }
@@ -365,10 +367,12 @@ namespace BriefFiniteElementNet
         public void Solve(SolverConfiguration config)
         {
             //new version
-            lastResult = new StaticLinearAnalysisResult();
-            lastResult.Parent = this;
-            
-            lastResult.SolverFactory = config.SolverFactory;
+            lastResult = new StaticLinearAnalysisResult
+            {
+                Parent = this,
+
+                SolverFactory = config.SolverFactory
+            };
 
             ReIndexNodes();
 
@@ -381,10 +385,12 @@ namespace BriefFiniteElementNet
         public void Solve_MPC(SolverConfiguration config)
         {
             //new version
-            lastResult = new StaticLinearAnalysisResult();
-            lastResult.Parent = this;
+            lastResult = new StaticLinearAnalysisResult
+            {
+                Parent = this,
 
-            lastResult.SolverFactory = config.SolverFactory;
+                SolverFactory = config.SolverFactory
+            };
 
             ReIndexNodes();
 

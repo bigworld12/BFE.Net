@@ -158,3 +158,4 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
+/.vs/BriefFiniteElementNet.VS2015/v15/Server/sqlite3

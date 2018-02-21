@@ -409,14 +409,7 @@ namespace BriefFiniteElementNet.Elements
                 if (i < 3)
                     buf[i, i + 9] = buf[i + 9, i] = 1.0;
             }
-
-
-            for (var i = buf.CoreArray.Length - 1; i >= 0; i--)
-            {
-                buf.CoreArray[i] *= _massDensity*v/20.0;
-            }
-
-
+            buf.MultiplyByConstant(_massDensity * v / 20.0);           
             return buf;
         }
 

@@ -10,10 +10,10 @@ namespace BriefFiniteElementNet
 {
     public class ArrayPool<T>
     {
-        private readonly Dictionary<int, Stack<T[]>> _pool = new Dictionary<int, Stack<T[]>>();
+        private readonly Dictionary<int, Stack<Array>> _pool = new Dictionary<int, Stack<Array>>();
 
         public readonly T[] Empty = new T[0];
-
+        public readonly T[,] Empty2D = new T[0, 0];
         public virtual void Clear()
         {
             _pool.Clear();
@@ -25,27 +25,24 @@ namespace BriefFiniteElementNet
 
             if (size == 0) return Empty;
 
-            Stack<T[]> candidates;
 
-            return _pool.TryGetValue(size, out candidates) && candidates.Count > 0 ? candidates.Pop() : new T[size];
+            var res = _pool.TryGetValue(size, out Stack<Array> candidates) && candidates.Count > 0 ? candidates.Pop() : new T[size];
+            return (T[])res;
         }
 
-        internal virtual void Free(T[] array)
+        internal virtual void Free(Array array)
         {
             if (array == null) throw new ArgumentNullException("array");
-
             if (array.Length == 0) return;
 
-            Stack<T[]> candidates;
 
-            if (!_pool.TryGetValue(array.Length, out candidates))
-                _pool.Add(array.Length, candidates = new Stack<T[]>());
+            if (!_pool.TryGetValue(array.Length, out Stack<Array> candidates))
+                _pool.Add(array.Length, candidates = new Stack<Array>());
 
             if (candidates.Count < MaxQLength)
                 if (!candidates.Contains(array))
                 {
                     candidates.Push(array);
-                    //Console.WriteLine("Freeing");
                 }
         }
 
@@ -62,7 +59,8 @@ namespace BriefFiniteElementNet
             }
         }
 
-        internal override void Free(T[] array)
+
+        internal override void Free(Array array)
         {
             lock (this)
             {
@@ -86,20 +84,21 @@ namespace BriefFiniteElementNet
         public static Matrix Allocate(int rows, int columns)
         {
             var arr = Pool.Allocate(rows * columns);
-
-            for (var i = 0; i < arr.Length; i++)
-                arr[i] = 0.0;
-
-            var buf = new Matrix(rows, columns, arr);
-
-            buf.UsePool = true;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                arr[i] = 0;
+            }
+            var buf = new Matrix(rows, columns, arr)
+            {
+                UsePool = true
+            };
 
             return buf;
         }
 
         public static void Free(params Matrix[] matrices)
         {
-            foreach(var mtx in matrices)
+            foreach (var mtx in matrices)
             {
                 if (mtx.CoreArray == null)
                     continue;

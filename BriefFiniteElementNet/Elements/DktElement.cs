@@ -133,11 +133,11 @@ namespace BriefFiniteElementNet.Elements
             var g2 = nodes[2].Location.ToMatrix();
 
 
-            var p0 = (t*g0).ToPoint();
-            var p1 = (t*g1).ToPoint();
-            var p2 = (t*g2).ToPoint();
+            var p0 = (t * g0).ToPoint();
+            var p1 = (t * g1).ToPoint();
+            var p2 = (t * g2).ToPoint();
 
-            return new[] {p0, p1, p2};
+            return new[] { p0, p1, p2 };
         }
 
         internal Vector TranformLocalToGlobal(Vector v)
@@ -185,8 +185,8 @@ namespace BriefFiniteElementNet.Elements
             //step 1
             var ls = GetLocalPoints();
 
-            var xs = new double[] {ls[0].X, ls[1].X, ls[2].X};
-            var ys = new double[] {ls[0].Y, ls[1].Y, ls[2].Y};
+            var xs = new double[] { ls[0].X, ls[1].X, ls[2].X };
+            var ys = new double[] { ls[0].Y, ls[1].Y, ls[2].Y };
 
             //step 2
             var kl = DktElement.GetStiffnessMatrix(xs, ys, this._thickness, this.ElasticModulus, this.PoissonRatio);
@@ -214,7 +214,7 @@ namespace BriefFiniteElementNet.Elements
             var t = Matrix.DiagonallyRepeat(lambda.Transpose(), 6); // eq. 5-16 page 78 (87 of file)
 
             //step 4 : get global stiffness matrix
-            var buf = t.Transpose()* kle * t; //eq. 5-15 p77
+            var buf = t.Transpose() * kle * t; //eq. 5-15 p77
 
             return buf;
         }
@@ -250,7 +250,7 @@ namespace BriefFiniteElementNet.Elements
             {
                 var b = GetBMatrix_old(xi, nu, lpts);
 
-                var ki = b.Transpose()*d*b;
+                var ki = b.Transpose() * d * b;
 
                 return ki;
             });
@@ -259,9 +259,9 @@ namespace BriefFiniteElementNet.Elements
 
             var res = intg.Integrate();
 
-            res.MultiplyByConstant(2*a);
+            res.MultiplyByConstant(2 * a);
 
-           
+
 
             //klocal DoF order is as noted in eq. 4.21 p. 44 : w1, θx1, θy1, w2, θx2, θy2, w3, θx3, θy3
             //it should convert to u1, v1, w1, θx1, θy1, θz1, ... and so on
@@ -277,7 +277,7 @@ namespace BriefFiniteElementNet.Elements
             //adding drilling dof:
 
             var maxKii = Enumerable.Range(0, res.RowCount).Max(i => res[i, i]);
-            buf2[5, 5] = buf2[11, 11] = buf2[17, 17] = maxKii/1e3;//eq 5.2, p. 71 ref [1]
+            buf2[5, 5] = buf2[11, 11] = buf2[17, 17] = maxKii / 1e3;//eq 5.2, p. 71 ref [1]
 
             return buf2;
         }
@@ -418,11 +418,26 @@ namespace BriefFiniteElementNet.Elements
                {
                    var b1 = (y31 * hx_xi(xi, eta) + y12 * hx_eta(xi, eta));
                    var b2 = (-x31 * hy_xi(xi, eta) - x12 * hy_eta(xi, eta));
-
                    var b3 =
                        (-x31 * hx_xi(xi, eta) - x12 * hx_eta(xi, eta) + y31 * hy_xi(xi, eta) + y12 * hy_eta(xi, eta));
 
-                   var buf = new Matrix(new[] { b1.CoreArray, b2.CoreArray, b3.CoreArray });
+                   double[] flattern(double[,] ma)
+                   {
+                       var r = ma.GetLength(0);
+                       var c = ma.GetLength(1);
+                       double[] re = new double[r * c];
+                       for (int i = 0; i < r; i++)
+                       {
+                           for (int j = 0; j < c; j++)
+                           {
+                               var flat = i * c + j;
+                               re[flat] = ma[i, j];
+                           }
+                       }
+
+                       return re;
+                   };                   
+                   var buf = new Matrix(new double[3][] { flattern(b1.CoreArray), flattern(b2.CoreArray), flattern(b3.CoreArray) });
 
                    buf.MultiplyByConstant(1 / (2 * a));
 
@@ -510,7 +525,7 @@ namespace BriefFiniteElementNet.Elements
             var y31 = y[2] - y[0];
             var y12 = y[0] - y[1];
 
-            var a = 0.5*Math.Abs(x31*y12 - x12*y31);
+            var a = 0.5 * Math.Abs(x31 * y12 - x12 * y31);
 
             var l23_2 = y23 * y23 + x23 * x23;
             var l31_2 = y31 * y31 + x31 * x31;
@@ -692,7 +707,7 @@ namespace BriefFiniteElementNet.Elements
             throw new NotImplementedException();
         }
 
-       
+
 
         /// <summary>
         /// Gets the area of triangular element
@@ -778,9 +793,9 @@ namespace BriefFiniteElementNet.Elements
             var f2 = new Force(0, 0, res[3, 0], res[4, 0], res[5, 0], 0);//for node 2, in local system
             var f3 = new Force(0, 0, res[6, 0], res[7, 0], res[8, 0], 0);//for node 3, in local system
             */
-            var f1 = new Force(0, 0, q*a/3, 0, 0, 0); //for node 1, in local system
-            var f2 = new Force(0, 0, q*a/3, 0, 0, 0); //for node 2, in local system
-            var f3 = new Force(0, 0, q*a/3, 0, 0, 0); //for node 3, in local system
+            var f1 = new Force(0, 0, q * a / 3, 0, 0, 0); //for node 1, in local system
+            var f2 = new Force(0, 0, q * a / 3, 0, 0, 0); //for node 2, in local system
+            var f3 = new Force(0, 0, q * a / 3, 0, 0, 0); //for node 3, in local system
 
             var f1g = TranformLocalToGlobal(f1.Forces);
             var m1g = TranformLocalToGlobal(f1.Moments);
@@ -791,7 +806,7 @@ namespace BriefFiniteElementNet.Elements
             var f3g = TranformLocalToGlobal(f3.Forces);
             var m3g = TranformLocalToGlobal(f3.Moments);
 
-            var buf = new Force[] {new Force(f1g, m1g), new Force(f2g, m2g), new Force(f3g, m3g)};
+            var buf = new Force[] { new Force(f1g, m1g), new Force(f2g, m2g), new Force(f3g, m3g) };
 
             return buf;
             throw new NotImplementedException();
